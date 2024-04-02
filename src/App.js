@@ -1,60 +1,88 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useCallback } from 'react';
 
-import CourseGoalList from "./components/CourseGoals/CourseGoalList/CourseGoalList";
-import CourseInput from "./components/CourseGoals/CourseInput/CourseInput";
-import "./App.css";
+import MoviesList from './components/MoviesList';
+import AddMovie from './components/AddMovie';
+import './App.css';
 
-const App = () => {
-  const [courseGoals, setCourseGoals] = useState([
-    { text: "Do all exercises!", id: "g1" },
-    { text: "Finish the course!", id: "g2" },
-  ]);
+function App() {
+  const [movies, setMovies] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
+ 
 
-  const addGoalHandler = (enteredText) => {
-    setCourseGoals((prevGoals) => {
-      // This is a spread operator (...) used to create a shallow copy of the prevGoals array
-      const updatedGoals = [...prevGoals];
-      // below line used to store one more object value in front of above array and it will change the value of array.
-      updatedGoals.unshift({ text: enteredText, id: Math.random().toString() });
-      return updatedGoals;
-    });
-  };
 
-  const deleteItemHandler = (goalId) => {
-    setCourseGoals((prevGoals) => {
-      //The filter() method creates a new array with all elements that pass the test implemented by the provided function.
-      const updatedGoals = prevGoals.filter((goal) => goal.id !== goalId);
-      return updatedGoals;
-    });
-  };
 
-  let content = (
-    <p style={{ textAlign: "center" }}>No goals found. Maybe add one?</p>
-  );
+  const fetchMoviesHandler = useCallback(async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const response = await fetch('https://react-http-2db7e-default-rtdb.firebaseio.com/movies.json');
+      if (!response.ok) {
+        throw new Error('Something went wrong!');
+      }
 
-  if (courseGoals.length > 0) {
-    content = (
-      <CourseGoalList items={courseGoals} onDeleteItem={deleteItemHandler} />
-    );
+      const data = await response.json();
+
+      const transformedMovies = data.results.map((movieData) => {
+        return {
+          id: movieData.episode_id,
+          title: movieData.title,
+          openingText: movieData.opening_crawl,
+          releaseDate: movieData.release_date,
+        };
+      });
+      setMovies(transformedMovies);
+    } catch (error) {
+      setError(error.message);
+    }
+    setIsLoading(false);
+  }, []);
+
+    // this function is called only whenever change in fetchMoviemanger
+
+  useEffect(() => {
+    fetchMoviesHandler();
+  }, [fetchMoviesHandler]);
+
+  async function addMovieHandler(movie) {
+   fetch('https://react-http-2db7e-default-rtdb.firebaseio.com/movies.json',
+   {
+    method :'POST',
+    body : JSON.stringify(movie),
+    headers :{
+      'Content-type' :'application/json'
+    }
+   });
+   const data= await response.json();
+   console.log(data)
+
+  }
+
+  let content = <p>Found no movies.</p>;
+
+  if (movies.length > 0) {
+    content = <MoviesList movies={movies} />;
+  }
+
+  if (error) {
+    content = <p>{error}</p>;
+  }
+
+  if (isLoading) {
+    content = <p>Loading...</p>;
   }
 
   return (
-    <div>
-      <section id="goal-form">
-        <CourseInput onAddGoal={addGoalHandler} />
+    <React.Fragment>
+      <section>
+        <AddMovie onAddMovie={addMovieHandler} />
       </section>
-      <section id="goals">
-        {content}
-        {/* {courseGoals.length > 0 && (
-          <CourseGoalList
-            items={courseGoals}
-            onDeleteItem={deleteItemHandler}
-          />
-        ) // <p style={{ textAlign: 'center' }}>No goals found. Maybe add one?</p>
-        } */}
+      <section>
+        <button onClick={fetchMoviesHandler}>Fetch Movies</button>
       </section>
-    </div>
+      <section>{content}</section>
+    </React.Fragment>
   );
-};
+}
 
 export default App;
