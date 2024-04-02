@@ -1,49 +1,69 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 
-import Login from "./components/Login/Login";
-import Home from "./components/Home/Home";
-import MainHeader from "./components/MainHeader/MainHeader";
+import MoviesList from "./components/MoviesList";
+import "./App.css";
 
 function App() {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-
-  //using this we can set or store the user creaditials in localstorage i write in app.js folder not in loginhandler
-  // coz every time app.js will rerun again and again
-
-  // const storeUserLoggedInInformation = localStorage("isLoggedIn", "1");
-
-  // this code execute every component whenever components loads the state will change
-  //  if(storeUserLoggedInInformation=='1'){
-  //   setIsLoggedIn(true) // setting the state of loging page.
-  //  }
+  const [movie, setMovies] = useState([]);
+  const[error,setError]=useState(null);
+//for async code handle error 
 
 
-  // i used the useEffect hook for setting the state and it will execute once and after w
-  //henever the dependencies updates it will again update so updation is depends on changing dependencies.
+  async function fetchMoviesHandler() {
+    setError(null);
 
-  // useEffect(() => {
-  //   if (storeUserLoggedInInformation === '1') {
-  //     setIsLoggedIn(true); // setting the state of loging page.
-  //   }
-  // }, []);
+    // if we have to handle errors in asyc code then try and catch block is used 
+    try{
+    // fetch the data using the link
+    const responce=fetch("https://swapi.dev/api/films");
+    const data=await response.json();
+    // userdefined error code
+      if(!responce.ok){
+        throw new Error("Something went wrong");
+      }
+        const transformedMovies = data.results.map((moviesData) => {
+          //whatever data is coming we will map it moviesData variable
+          // below return stmt written for converting the json format responce into userDefined format
+          return {
+            id: moviesData.episode_id,
+            titile: moviesData.titile,
+            openingText: moviesData.opening_crawl,
+            releaseDate: moviesData.release_date,
+          };
+        });
+        setMovies(transformedMovies);
+    }catch(error){
+       setError(error.message)
+    }
 
-  const loginHandler = (email, password) => {
-    // We should of course check email and password
-    // But it's just a dummy/ demo anyways
-    setIsLoggedIn(true);
-  };
+   
+  }
 
-  const logoutHandler = () => {
-    setIsLoggedIn(false);
-  };
+
+  // this is static data passing
+  // const dummyMovies = [
+  //   {
+  //     id: 1,
+  //     title: 'Some Dummy Movie',
+  //     openingText: 'This is the opening text of the movie',
+  //     releaseDate: '2021-05-18',
+  //   },
+  //   {
+  //     id: 2,
+  //     title: 'Some Dummy Movie 2',
+  //     openingText: 'This is the second opening text of the movie',
+  //     releaseDate: '2021-05-19',
+  //   },
+  // ];
 
   return (
     <React.Fragment>
-      <MainHeader isAuthenticated={isLoggedIn} onLogout={logoutHandler} />
-      <main>
-        {!isLoggedIn && <Login onLogin={loginHandler} />}
-        {isLoggedIn && <Home onLogout={logoutHandler} />}
-      </main>
+      <section>
+        <button onClick={fetchMoviesHandler}>Fetch Movies</button>
+      </section>
+      <section>
+        <MoviesList movies={movie} />
+      </section>
     </React.Fragment>
   );
 }
