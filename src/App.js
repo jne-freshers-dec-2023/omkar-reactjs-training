@@ -1,60 +1,29 @@
-import React, { useState } from "react";
+import React, { useState , Fragment} from 'react';
 
-import CourseGoalList from "./components/CourseGoals/CourseGoalList/CourseGoalList";
-import CourseInput from "./components/CourseGoals/CourseInput/CourseInput";
-import "./App.css";
+import AddUser from './components/Users/AddUser';
+import UsersList from './components/Users/UsersList';
 
-const App = () => {
-  const [courseGoals, setCourseGoals] = useState([
-    { text: "Do all exercises!", id: "g1" },
-    { text: "Finish the course!", id: "g2" },
-  ]);
+function App() {
+  const [usersList, setUsersList] = useState([]);
 
-  const addGoalHandler = (enteredText) => {
-    setCourseGoals((prevGoals) => {
-      // This is a spread operator (...) used to create a shallow copy of the prevGoals array
-      const updatedGoals = [...prevGoals];
-      // below line used to store one more object value in front of above array and it will change the value of array.
-      updatedGoals.unshift({ text: enteredText, id: Math.random().toString() });
-      return updatedGoals;
+  const addUserHandler = (uName, uAge) => {
+    setUsersList((prevUsersList) => {
+      return [
+        ...prevUsersList,
+        { name: uName, age: uAge, id: Math.random().toString() },
+      ];
     });
   };
-
-  const deleteItemHandler = (goalId) => {
-    setCourseGoals((prevGoals) => {
-      //The filter() method creates a new array with all elements that pass the test implemented by the provided function.
-      const updatedGoals = prevGoals.filter((goal) => goal.id !== goalId);
-      return updatedGoals;
-    });
-  };
-
-  let content = (
-    <p style={{ textAlign: "center" }}>No goals found. Maybe add one?</p>
-  );
-
-  if (courseGoals.length > 0) {
-    content = (
-      <CourseGoalList items={courseGoals} onDeleteItem={deleteItemHandler} />
-    );
-  }
 
   return (
-    <div>
-      <section id="goal-form">
-        <CourseInput onAddGoal={addGoalHandler} />
-      </section>
-      <section id="goals">
-        {content}
-        {/* {courseGoals.length > 0 && (
-          <CourseGoalList
-            items={courseGoals}
-            onDeleteItem={deleteItemHandler}
-          />
-        ) // <p style={{ textAlign: 'center' }}>No goals found. Maybe add one?</p>
-        } */}
-      </section>
-    </div>
+    // we can use Fragment at the place of Div it is nothing but component which has no JSX code inside that 
+    // or we can srite <> </> tag only to write Fragment but it depends on our project env
+    
+    <Fragment>
+      <AddUser onAddUser={addUserHandler} />
+      <UsersList users={usersList} />
+    </Fragment>
   );
-};
+}
 
 export default App;
