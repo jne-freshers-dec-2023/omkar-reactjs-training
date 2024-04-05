@@ -1,87 +1,19 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React from "react";
+import "./App.css";
+import SignupPage from "./Components/SignUpPage";
+import { BrowserRouter as Router, Route, Routes } from "react-router-dom"; // Removed Switch
+import Login from "./Components/Login";
 
-import MoviesList from './components/MoviesList';
-import AddMovie from './components/AddMovie';
-import './App.css';
 
 function App() {
-  const [movies, setMovies] = useState([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState(null);
- 
-
-
-
-  const fetchMoviesHandler = useCallback(async () => {
-    setIsLoading(true);
-    setError(null);
-    try {
-      const response = await fetch('https://react-http-2db7e-default-rtdb.firebaseio.com/movies.json');
-      if (!response.ok) {
-        throw new Error('Something went wrong!');
-      }
-
-      const data = await response.json();
-
-      const transformedMovies = data.results.map((movieData) => {
-        return {
-          id: movieData.episode_id,
-          title: movieData.title,
-          openingText: movieData.opening_crawl,
-          releaseDate: movieData.release_date,
-        };
-      });
-      setMovies(transformedMovies);
-    } catch (error) {
-      setError(error.message);
-    }
-    setIsLoading(false);
-  }, []);
-
-    // this function is called only whenever change in fetchMoviemanger
-
-  useEffect(() => {
-    fetchMoviesHandler();
-  }, [fetchMoviesHandler]);
-
-  async function addMovieHandler(movie) {
-   fetch('https://react-http-2db7e-default-rtdb.firebaseio.com/movies.json',
-   {
-    method :'POST',
-    body : JSON.stringify(movie),
-    headers :{
-      'Content-type' :'application/json'
-    }
-   });
-   const data= await response.json();
-   console.log(data)
-
-  }
-
-  let content = <p>Found no movies.</p>;
-
-  if (movies.length > 0) {
-    content = <MoviesList movies={movies} />;
-  }
-
-  if (error) {
-    content = <p>{error}</p>;
-  }
-
-  if (isLoading) {
-    content = <p>Loading...</p>;
-  }
-
   return (
-    <React.Fragment>
-      <section>
-        <AddMovie onAddMovie={addMovieHandler} />
-      </section>
-      <section>
-        <button onClick={fetchMoviesHandler}>Fetch Movies</button>
-      </section>
-      <section>{content}</section>
-    </React.Fragment>
+    <Router>
+      <Routes>
+        <Route path="/" element={<SignupPage />} />
+        <Route path="/Login" element={<Login />} />
+      </Routes>
+    </Router>
+  
   );
 }
 
